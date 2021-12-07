@@ -21,8 +21,8 @@ app.get("/urls", (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-app.get(`/url/b2xVn2`, function (req, res) {
-  res.send(req.params)
+app.get('/urls/:shortURL', function (req, res) {
+  res.send('You requested to see ' + req.params.shortURL)
 })
 
 app.get("/urls.json", (req, res) => {
