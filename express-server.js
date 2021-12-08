@@ -22,6 +22,22 @@ app.get("/urls", (req, res) => {
   res.render('urls_index', templateVars);
 });
 
+app.get('/u/:shortURL', (req, res)=> {
+  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
+  let shortURL = req.params.shortURL;
+  let longURL = urlDatabase[shortURL]
+  const templateVars = {
+    shortURL: shortURL,
+    longURL: longURL,
+  }
+  res.render('urls_show', templateVars);
+  // res.end('This is our test string.' + shortURL)
+});
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 app.get('/urls/:shortURL', (req, res)=> {
   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
   let shortURL = req.params.shortURL;
@@ -33,6 +49,9 @@ app.get('/urls/:shortURL', (req, res)=> {
   res.render('urls_show', templateVars);
   // res.end('This is our test string.' + shortURL)
 });
+
+
+
 
 
 app.get("/urls.json", (req, res) => {
