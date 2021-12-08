@@ -16,14 +16,24 @@ app.get("/", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase }
   res.render('urls_index', templateVars);
 });
 
-app.get('/urls/:shortURL', function (req, res) {
-  res.send('You requested to see ' + req.params.shortURL)
-})
+app.get('/urls/:shortURL', (req, res)=> {
+  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
+  let shortURL = req.params.shortURL;
+  let longURL = urlDatabase[shortURL]
+  const templateVars = {
+    shortURL: shortURL,
+    longURL: longURL,
+  }
+  res.render('urls_show', templateVars);
+  // res.end('This is our test string.' + shortURL)
+});
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
