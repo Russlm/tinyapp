@@ -1,14 +1,18 @@
+//REQUIRE
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
+
+
+//SERVER CONFIG.
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
-
 app.set('view engine', 'ejs');
 
+//DATABASES.
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -29,6 +33,7 @@ const users = {
 
 // const newUserID = generateRandomID();
 
+// GET REQUESTS 
 
 //SENDS USER HELLO
 app.get("/", (req, res) => {
@@ -46,7 +51,7 @@ app.get("/urls", (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-
+//THIS IS THE SHOW A TINY LINK FUNCTIONALITY 
 app.get('/u/:shortURL', (req, res)=> {
   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
   let shortURL = req.params.shortURL;
@@ -59,11 +64,26 @@ app.get('/u/:shortURL', (req, res)=> {
   // res.end('This is our test string.' + shortURL)
 });
 
+//ALT TINY LINK FUNCTIONALITY
+app.get('/urls/:shortURL', (req, res)=> {
+  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL]
+  const templateVars = {
+    shortURL: shortURL,
+    longURL: longURL,
+  }
+  res.render('urls_show', templateVars);
+  // res.end('This is our test string.' + shortURL)
+});
+
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-//ROUTES THAT UPDATE INFORMATION 
+//ROUTES THAT UPDATE INFORMATION
+
+//POST REQUESTS 
 
 //works w /new client side; adds new entry to the database.
 app.post("/urls", (req, res) => {
@@ -78,11 +98,30 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls')
 });
 
-//login 
+//login * NOT DONE *
 app.post("/login", (req, res) => {
-  console.log(res.body.username)
-  // res.cookie("username" )
+  console.log(req.body.username)
+  res.cookie(req.body.username )
   res.redirect('/urls')
+});
+
+
+//EDIT A LINK
+app.post('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL; 
+  console.log('incoming params',shortURL);
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect('/urls')
+});
+
+
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
 
 //update a url.
@@ -100,32 +139,3 @@ app.post("/login", (req, res) => {
 //   urlDatabase[req.body.shortURL] = req.body.longURL
 //   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 // });
-
-app.get('/urls/:shortURL', (req, res)=> {
-  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL]
-  const templateVars = {
-    shortURL: shortURL,
-    longURL: longURL,
-  }
-  res.render('urls_show', templateVars);
-  // res.end('This is our test string.' + shortURL)
-});
-
-app.post('/urls/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL; 
-  console.log('incoming params',shortURL);
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect('/urls')
-});
-
-
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
