@@ -55,11 +55,10 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-// app.post("/urls/:shortURL/delete", (req, res) => {
-//   let shortURL = req.params.shortURL;
-//   let longURL = urlDatabase[shortURL]
-//   delete longURL;
-// });
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls')
+});
 
 app.get('/urls/:shortURL', (req, res)=> {
   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
