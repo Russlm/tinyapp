@@ -55,8 +55,18 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//ROUTES THAT UPDATE INFORMATION 
+
+//delete a url.
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls')
+});
+
+//update a url.
+app.post("/urls/:id/", (req, res) => {
+  console.log(req.params.id)
+  urlDatabase[req.shortURL];
   res.redirect('/urls')
 });
 
