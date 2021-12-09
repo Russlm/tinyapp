@@ -17,9 +17,10 @@
       <!-- This is the url submission form -->
       <div class= "card-footer text-muted"> 
         <h3> Edit </h3>
-        <form method="POST" action="/urls/:id/" class = 'form-inline justify-content-center' > <label>New URL: </label>
-          <input type="text">
-          <button class="btn btn-outline-secondary">Submit</button>
+        <form method="POST" action="/urls/<%= shortURL %>/"> 
+          <label>New URL: </label>
+            <input type="text" style="width: 300px; margin: 1em" name= "longURL" placeholder="<%= longURL %>" >
+            <button type='submit' class="btn btn-outline-primary">Submit</button>
         </form>
       </div>
       
