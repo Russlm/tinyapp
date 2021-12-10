@@ -1,4 +1,4 @@
-//REQUIRE
+//REQUIRES.
 
 //#region
 const express = require("express");
@@ -18,7 +18,6 @@ app.use(cookieParser())
 app.set('view engine', 'ejs');
 
 //#endregion
-
 
 //DATABASES.
 
@@ -40,29 +39,52 @@ const users = {
     password: "dishwasher-funk"
   }
 }
+//#endregion
+
+//HELPER FUNCTIONS. 
+
+//#region
 
 //randomization code.
-const generateRandomID = () => {
+const generateRandomID= () => {
   return Math.random().toString(36).slice(7)
+}
+
+const searchEmail= (email) => {
+  data = Object.values(users);
+  console.log(data);
+  for (let element of data) {
+    console.log("element email is", element.email)
+    console.log("compared email is", email)
+    if(email === element.email) {
+      return true;
+    }
+  }
+  return false;
 }
 
 //#endregion
 
-
-// Testing Paths:
+//DEV GET REQUESTS:
 
 //#region
-//Prints out the Databases. 
+
+//Prints out the URL Database. 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//SENDS USER HELLO
+//Prints out the User Database.
+app.get("/users.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+//Sends User Hello.
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-// SENDS USER STANDARD HELLO WORLD 
+//Sends User Hello Word.
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
@@ -77,12 +99,13 @@ app.get("/hello", (req, res) => {
 //show all links. 
 
 app.get("/urls", (req, res) => {
-  const userId = req.cookies["user_id"]
+  const user = users[req.cookies["user_id"]]
   const templateVars = { 
-    user: userId, // -> object with id: value, password: value, email: vlaue 
+    user: user, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
-  console.log('get urls', users[req.cookies["user_id"]])
+  console.log('cookie sourced userID:', req.cookies["user_id"])
+  console.log('user object:', users[req.cookies["user_id"]])
   console.log('templateVars being sent', templateVars)
   res.render('urls_index', templateVars);
 });
@@ -91,11 +114,15 @@ app.get("/urls", (req, res) => {
 //create a new link.
 
 app.get("/urls/new", (req, res) => {
+  console.log('/urls/new')
   const userId = req.cookies["user_id"]
   const templateVars = { 
     user: userId, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
+  console.log('cookie sourced userID:', req.cookies["user_id"])
+  console.log('user object:', users[req.cookies["user_id"]])
+  console.log('templateVars being sent', templateVars)
   res.render("urls_new", templateVars);
 
 });
@@ -105,10 +132,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = {
     username: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   res.render("register", templateVars);
 });
-
 
 //show an individual link. 
 
@@ -116,11 +143,16 @@ app.get('/urls/:shortURL', (req, res)=> {
   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL] 
-  const userId = req.cookies["user_id"] 
+  const user = users[req.cookies["user_id"]] 
   const templateVars = { 
-    user: userId, // -> object with id: value, password: value, email: vlaue 
-    urls: urlDatabase, 
+    user: user, // -> object with id: value, password: value, email: vlaue 
+    urls: urlDatabase,
+    longURL,
+    shortURL 
   };
+  console.log('cookie sourced userID:', req.cookies["user_id"])
+  console.log('user object:', users[req.cookies["user_id"]])
+  console.log('templateVars being sent', templateVars)
   res.render('urls_show', templateVars);
   // res.end('This is our test string.' + shortURL)
 });
@@ -157,6 +189,17 @@ app.post("/login", (req, res) => {
 app.post("/register", (req, res) => {
   const newUserID = generateRandomID();
   console.log(newUserID)
+  // if incomplete username or password fields.
+  if(!req.body.password || !req.body.email) {
+    res.status(400);
+    res.send('Please make sure username or password are filled out correctly. 🤨')
+  }
+
+  // if email matches email in database. 
+  if(searchEmail(req.body.email)) {
+    res.status(400);
+    res.send('Email in use. 😅')
+  }
   users[newUserID] = {
     id: newUserID, 
     email: req.body.email, 
@@ -167,7 +210,7 @@ app.post("/register", (req, res) => {
   res.redirect('/urls');
 });
 
-//edit a link.
+//show and edit a link. --> related to urls_show.ejs
 
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL; 
@@ -179,11 +222,17 @@ app.post('/urls/:shortURL', (req, res) => {
 //#endregion
 
 
-//SERVER OPERATION 
+//SERVER INITIALIZATION: 
+
+//#region
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+//#endregion
+
+
 
 //OLD TEST CODE.
 
