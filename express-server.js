@@ -33,7 +33,12 @@ const users = {
 
 // const newUserID = generateRandomID();
 
-// GET REQUESTS 
+// Testing Paths:
+
+//Prints out the Databases. 
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
 
 //SENDS USER HELLO
 app.get("/", (req, res) => {
@@ -45,9 +50,16 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+
+// GET REQUESTS 
+
+
 //SENDS USERS THE URLS DATABASE 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase }
+  const templateVars = { 
+    username: req.cookies["username"],
+    urls: urlDatabase, 
+  };
   res.render('urls_index', templateVars);
 });
 
@@ -57,6 +69,7 @@ app.get('/u/:shortURL', (req, res)=> {
   let shortURL = req.params.shortURL;
   let longURL = urlDatabase[shortURL]
   const templateVars = {
+    username: req.cookies["username"],
     shortURL: shortURL,
     longURL: longURL,
   }
@@ -70,6 +83,7 @@ app.get('/urls/:shortURL', (req, res)=> {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]
   const templateVars = {
+    username: req.cookies["username"],
     shortURL: shortURL,
     longURL: longURL,
   }
@@ -78,6 +92,9 @@ app.get('/urls/:shortURL', (req, res)=> {
 });
 
 app.get("/urls/new", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+  };
   res.render("urls_new");
 });
 
@@ -101,7 +118,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //login * NOT DONE *
 app.post("/login", (req, res) => {
   console.log(req.body.username)
-  res.cookie(req.body.username )
+  res.cookie('username', req.body.username)
   res.redirect('/urls')
 });
 
@@ -114,11 +131,6 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls')
 });
 
-
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
