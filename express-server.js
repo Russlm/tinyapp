@@ -1,10 +1,15 @@
 //REQUIRE
+
+//#region
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 
+//#endregion
 
 //SERVER CONFIG.
+
+//#region
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -12,7 +17,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 app.set('view engine', 'ejs');
 
+//#endregion
+
+
 //DATABASES.
+
+//#region
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -31,10 +41,17 @@ const users = {
   }
 }
 
-// const newUserID = generateRandomID();
+//randomization code.
+const generateRandomID = () => {
+  return Math.random().toString(36).slice(7)
+}
+
+//#endregion
+
 
 // Testing Paths:
 
+//#region
 //Prints out the Databases. 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -50,70 +67,76 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//#endregion
 
-// GET REQUESTS 
 
+// GET REQUESTS ////
 
-//SENDS USERS THE URLS DATABASE 
+//#region
+
+//show all links. 
+
 app.get("/urls", (req, res) => {
+  const userId = req.cookies["user_id"]
   const templateVars = { 
-    username: req.cookies["username"],
+    user: userId, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
+  console.log('get urls', users[req.cookies["user_id"]])
+  console.log('templateVars being sent', templateVars)
   res.render('urls_index', templateVars);
 });
 
-//THIS IS THE SHOW A TINY LINK FUNCTIONALITY 
-app.get('/u/:shortURL', (req, res)=> {
-  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
-  let shortURL = req.params.shortURL;
-  let longURL = urlDatabase[shortURL]
-  const templateVars = {
-    username: req.cookies["username"],
-    shortURL: shortURL,
-    longURL: longURL,
-  }
-  res.render('urls_show', templateVars);
-  // res.end('This is our test string.' + shortURL)
-});
 
-//ALT TINY LINK FUNCTIONALITY
-app.get('/urls/:shortURL', (req, res)=> {
-  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL]
-  const templateVars = {
-    username: req.cookies["username"],
-    shortURL: shortURL,
-    longURL: longURL,
-  }
-  res.render('urls_show', templateVars);
-  // res.end('This is our test string.' + shortURL)
-});
+//create a new link.
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
+  const userId = req.cookies["user_id"]
+  const templateVars = { 
+    user: userId, // -> object with id: value, password: value, email: vlaue 
+    urls: urlDatabase, 
   };
   res.render("urls_new", templateVars);
+
 });
 
-// register 
+//register.
+
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
   };
   res.render("register", templateVars);
 });
 
-//ROUTES THAT UPDATE INFORMATION
+
+//show an individual link. 
+
+app.get('/urls/:shortURL', (req, res)=> {
+  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL] 
+  const userId = req.cookies["user_id"] 
+  const templateVars = { 
+    user: userId, // -> object with id: value, password: value, email: vlaue 
+    urls: urlDatabase, 
+  };
+  res.render('urls_show', templateVars);
+  // res.end('This is our test string.' + shortURL)
+});
+
+//#endregion 
+
 
 //POST REQUESTS 
 
+//#region
+
 //works w /new client side; adds new entry to the database.
 app.post("/urls", (req, res) => {
+  const newUserID = generateRandomID();
   console.log(req.body);  // Log the POST request body to the console
-  urlDatabase[req.body.shortURL] = req.body.longURL
+  urlDatabase[newUserID] = req.body.longURL
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
@@ -123,26 +146,29 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls')
 });
 
-//login 
+//login.
 app.post("/login", (req, res) => {
   console.log(req.body.username)
-  res.cookie('username', req.body.username)
+  res.cookie('user_id', req.body[user_id])
   res.redirect('/urls')
 });
 
-// register 
+//register.
 app.post("/register", (req, res) => {
-  users["userRandom3ID"] = {
-    id: req.body.username, 
+  const newUserID = generateRandomID();
+  console.log(newUserID)
+  users[newUserID] = {
+    id: newUserID, 
     email: req.body.email, 
     password: req.body.password,
   }
-
-  console.log(users)
+  res.cookie('user_id', newUserID); 
+  console.log(users);
   res.redirect('/urls');
 });
 
-//EDIT A LINK
+//edit a link.
+
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL; 
   console.log('incoming params',shortURL);
@@ -150,10 +176,18 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls')
 });
 
+//#endregion
+
+
+//SERVER OPERATION 
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+//OLD TEST CODE.
+
+//#region
 
 //update a url.
 
@@ -170,3 +204,20 @@ app.listen(PORT, () => {
 //   urlDatabase[req.body.shortURL] = req.body.longURL
 //   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 // });
+
+// app.get('/u/:shortURL', (req, res)=> {
+//   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
+//   let shortURL = req.params.shortURL;
+//   let longURL = urlDatabase[shortURL]
+//   const templateVars = {
+//     uusername: req.cookies["user_id"],
+//     user: users[req.cookies["user_id"]],
+//     shortURL: shortURL,
+//     longURL: longURL,
+//   }
+//   res.render('urls_show', templateVars);
+//   // res.end('This is our test string.' + shortURL)
+// });
+
+//#endregion
+
