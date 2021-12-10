@@ -137,6 +137,16 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+//login.
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    username: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
+  };
+  res.render("login", templateVars);
+});
+
 //show an individual link. 
 
 app.get('/urls/:shortURL', (req, res)=> {
