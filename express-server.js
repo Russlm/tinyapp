@@ -95,7 +95,15 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     username: req.cookies["username"],
   };
-  res.render("urls_new");
+  res.render("urls_new", templateVars);
+});
+
+// register 
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("register", templateVars);
 });
 
 //ROUTES THAT UPDATE INFORMATION
@@ -115,13 +123,24 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls')
 });
 
-//login * NOT DONE *
+//login 
 app.post("/login", (req, res) => {
   console.log(req.body.username)
   res.cookie('username', req.body.username)
   res.redirect('/urls')
 });
 
+// register 
+app.post("/register", (req, res) => {
+  users["userRandom3ID"] = {
+    id: req.body.username, 
+    email: req.body.email, 
+    password: req.body.password,
+  }
+
+  console.log(users)
+  res.redirect('/urls');
+});
 
 //EDIT A LINK
 app.post('/urls/:shortURL', (req, res) => {
