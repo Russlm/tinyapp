@@ -159,8 +159,8 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = {
-    username: req.cookies["email"],
-    user: users[req.cookies["email"]]
+    userID: req.cookies["user_id"],
+    user: users[req.cookies["user_id"]]
   };
   console.log('templateVars being sent from /login', templateVars)
   res.render("login", templateVars);
@@ -240,10 +240,9 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const newUserID = generateRandomID();
   console.log(newUserID)
-  // if incomplete username or password fields.
   if(!req.body.password || !req.body.email) {
     res.status(400);
-    res.send('Please make sure username or password are filled out correctly. 🤨')
+    res.send('Please make sure email or password are filled out correctly. 🤨')
   }
 
   // if email matches email in database. 
