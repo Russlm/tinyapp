@@ -12,7 +12,7 @@ const users = {
 }
 
 const searchEmail= (email) => {
-  data = Object.values(users);
+  let data = Object.values(users);
   console.log(data);
   for (let element of data) {
     console.log("element email is", element.email)

@@ -63,6 +63,25 @@ const searchEmail= (email) => {
   return false;
 }
 
+const getIDByEmail = (email) => {
+  data = Object.values(users);
+  console.log(data);
+  for (let element of data) {
+    console.log("element email is", element.email)
+    console.log("compared email is", email)
+    if(email === element.email) {
+      return element.id;
+    }
+  }
+  return false;
+}
+
+const passwordCheck = (id, password) => {
+  if(password === element.password) {
+    return true;
+  }
+  return false;
+}
 //#endregion
 
 //DEV GET REQUESTS:
@@ -115,11 +134,13 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   console.log('/urls/new')
-  const userId = req.cookies["user_id"]
+  const user = users[req.cookies["user_id"]]
   const templateVars = { 
-    user: userId, // -> object with id: value, password: value, email: vlaue 
+    user: user, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
+
+  
   console.log('cookie sourced userID:', req.cookies["user_id"])
   console.log('user object:', users[req.cookies["user_id"]])
   console.log('templateVars being sent', templateVars)
@@ -131,7 +152,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"],
+    userId: req.cookies["user_id"],
     user: users[req.cookies["user_id"]]
   };
   res.render("register", templateVars);
@@ -190,9 +211,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //login.
 app.post("/login", (req, res) => {
-  console.log(req.body.username)
-  res.cookie('user_id', req.body[user_id])
-  res.redirect('/urls')
+  const userEmail = getIDByEmail(req.body.email)
+  if(userEmail) {
+    if(getIDByPassword)
+    res.cookie('user_id', req.body.email)
+    res.redirect('/urls')
+  } else { }
+  console.log(req.body.email)
 });
 
 //register.

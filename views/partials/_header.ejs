@@ -1,3 +1,4 @@
+<!--#region-->
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
@@ -5,11 +6,12 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <!--#endregion-->
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <% if(user) {%>
-        <a class="nav-item nav-link"><%= user['email'] %> </a>
+        <a class="nav-item nav-link">Logged in as: <%= user['email'] %> </a>
 
         <% } else {%>
         <form action="/login" method="GET">
@@ -20,9 +22,11 @@
         </form>
         <% } %>
       </div>
+      <!--#region-->
     </div>
     <div>
       
     </div>
   </nav>
 </header>
+<!--#endregion-->
