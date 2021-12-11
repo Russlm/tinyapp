@@ -52,7 +52,7 @@ const generateRandomID= () => {
 
 const searchEmail= (email) => {
   data = Object.values(users);
-  console.log(data);
+  console.log('database input into the searchEmail fn:', data);
   for (let element of data) {
     console.log("element email is", element.email)
     console.log("compared email is", email)
@@ -65,19 +65,19 @@ const searchEmail= (email) => {
 
 const getIDByEmail = (email) => {
   data = Object.values(users);
-  console.log(data);
+  console.log('database input into the getIDByEmail fn:',data);
   for (let element of data) {
     console.log("element email is", element.email)
     console.log("compared email is", email)
     if(email === element.email) {
-      return element.id;
+      return element;
     }
   }
   return false;
 }
 
 const passwordCheck = (id, password) => {
-  if(password === element.password) {
+  if(password === id.password) {
     return true;
   }
   return false;
@@ -118,32 +118,27 @@ app.get("/hello", (req, res) => {
 //show all links. 
 
 app.get("/urls", (req, res) => {
+  console.log('cookie data working with in urls',req.cookies['email'])
   const user = users[req.cookies["user_id"]]
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
-  console.log('cookie sourced userID:', req.cookies["user_id"])
-  console.log('user object:', users[req.cookies["user_id"]])
-  console.log('templateVars being sent', templateVars)
+  console.log('templateVars being used by /urls', templateVars)
   res.render('urls_index', templateVars);
 });
 
 
 //create a new link.
 
-app.get("/urls/new", (req, res) => {
+app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
   console.log('/urls/new')
-  const user = users[req.cookies["user_id"]]
+  const user = users[req.cookies["user_id"]] //-> take recieved cookie and find object.
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
-
-  
-  console.log('cookie sourced userID:', req.cookies["user_id"])
-  console.log('user object:', users[req.cookies["user_id"]])
-  console.log('templateVars being sent', templateVars)
+  console.log('templateVars being sent from urls/new', templateVars);
   res.render("urls_new", templateVars);
 
 });
@@ -155,6 +150,8 @@ app.get("/register", (req, res) => {
     userId: req.cookies["user_id"],
     user: users[req.cookies["user_id"]]
   };
+  console.log('templateVars being sent from urls/new', templateVars);
+  console.log('newly issued login cookie from /register:', req.cookies)
   res.render("register", templateVars);
 });
 
@@ -162,9 +159,10 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    username: req.cookies["email"],
+    user: users[req.cookies["email"]]
   };
+  console.log('templateVars being sent from /login', templateVars)
   res.render("login", templateVars);
 });
 
@@ -211,13 +209,31 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //login.
 app.post("/login", (req, res) => {
-  const userEmail = getIDByEmail(req.body.email)
-  if(userEmail) {
-    if(getIDByPassword)
-    res.cookie('user_id', req.body.email)
-    res.redirect('/urls')
-  } else { }
-  console.log(req.body.email)
+  console.log('candidate email is: ', req.body.email)
+  console.log('candidate password is: ', req.body.password)
+  const isValidEmail = searchEmail(req.body.email);
+  const userID = getIDByEmail(req.body.email);
+  if(isValidEmail) {
+    if(passwordCheck(userID, req.body.password)) {
+      res.cookie('user_id', userID.id);
+      res.redirect('/urls');
+    } else {
+      res.status(403)
+    res.send('invalid password. ')
+    }
+  } else {
+    res.status(403)
+    res.send('invalid email.')
+  }
+
+});
+
+//logout. 
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect('/urls');
+  console.log(req.body.email);
 });
 
 //register.
