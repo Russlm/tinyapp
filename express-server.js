@@ -1,45 +1,31 @@
 //REQUIRES.
 
-//#region
 const express = require("express");
-const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session')
-const {
-  generateRandomID,
-  searchEmail,
-  getIDByEmail,
-  passwordCheck,
-  urlsForUser,
-  userURLObjects,
-} = require("./helpers")
-
-//#endregion
 
 //SERVER CONFIG.
-
-//#region
+ 
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
-// app.use(cookieParser())
 app.use(cookieSession({
   name: 'session',
   keys: ['key1337'],
 }));
 
-//#endregion
-
 //DATABASES.
-
-//#region
 
 const urlDatabase = {
     b6UTxQ: {
         longURL: "https://www.tsn.ca",
+        userID: "userRandomID"
+    },
+    asdf3D: {
+        longURL: "https://reddit.com",
         userID: "userRandomID"
     },
     i3BoGr: {
@@ -60,79 +46,83 @@ const users = {
     password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 }
-//#endregion
+ 
 
 //HELPER FUNCTIONS. 
 
-//#region
+//randomization code.
 
-// //randomization code.
-// const generateRandomID= () => {
-//   return Math.random().toString(36).slice(7)
-// }
+const generateRandomID= () => {
+  function randomString(anysize, charset) {
+     let res = '';
+     while (anysize--) res += charset[Math.random() * charset.length | 0];
+     return res;
+   }
+   return randomString(6,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
+ }
 
-// const searchEmail= (email) => {
-//   data = Object.values(users);
-//   console.log('database input into the searchEmail fn:', data);
-//   for (let element of data) {
-//     console.log("element email is", element.email)
-//     console.log("compared email is", email)
-//     if(email === element.email) {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
+const searchEmail= (email) => {
+  data = Object.values(users);
+  console.log('database input into the searchEmail fn:', data);
+  for (let element of data) {
+    console.log("element email is", element.email)
+    console.log("compared email is", email)
+    if(email === element.email) {
+      return true;
+    }
+  }
+  return false;
+}
 
-// const getIDByEmail = (email) => {
-//   data = Object.values(users);
-//   console.log('database input into the getIDByEmail fn:',data);
-//   for (let element of data) {
-//     console.log("element email is", element.email)
-//     console.log("compared email is", email)
-//     if(email === element.email) {
-//       return element;
-//     }
-//   }
-//   return false;
-// }
+const getIDByEmail = (email) => {
+  data = Object.values(users);
+  console.log('database input into the getIDByEmail fn:',data);
+  for (let element of data) {
+    console.log("element email is", element.email)
+    console.log("compared email is", email)
+    if(email === element.email) {
+      return element;
+    }
+  }
+  return false;
+}
 
-// const passwordCheck = (id, password) => {
-//   if(password === id.password) {
-//     return true;
-//   }
-//   return false;
-// }
+const passwordCheck = (id, password) => {
+  if(password === id.password) {
+    return true;
+  }
+  return false;
+}
 
-// const urlsForUser = (userID) => {
-//   // const shortURL =Object.keys(urlDatabase);
-//   const output = [];
-//   for (key in urlDatabase) {
-//     if (urlDatabase[key].userID === userID) {
-//       output.push(key);
-//     }
-//   }
-//   return output
-// }
+const urlsForUser = (userID) => {
+  // const shortURL =Object.keys(urlDatabase);
+  const output = [];
+  for (key in urlDatabase) {
+    if (urlDatabase[key].userID === userID) {
+      output.push(key);
+    }
+  }
+  return output
+}
 
-// const userURLObjects = (userID) => {
-//   // const shortURL =Object.keys(urlDatabase);
-//   const output = {};
-//   for (let shortURL in urlDatabase) {
-//     console.log(shortURL)
-//     console.log('userid is ', )
-//     if (urlDatabase[shortURL].userID === userID) {
-//       output[shortURL] = urlDatabase[shortURL].longURL;
-//       console.log('shortURL is', shortURL, 'output now is', output)
-//     }
-//   }
-//   return output
-// }
-//#endregion
+const userURLObjects = (userID) => {
+  // const shortURL =Object.keys(urlDatabase);
+  const output = {};
+  for (let shortURL in urlDatabase) {
+    console.log(shortURL)
+    console.log('userid is ', )
+    if (urlDatabase[shortURL].userID === userID) {
+      output[shortURL] = urlDatabase[shortURL].longURL;
+      console.log('shortURL is', shortURL, 'output now is', output)
+    }
+  }
+  return output
+}
+ 
 
 //DEV GET REQUESTS:
 
-//#region
+ 
 
 //Prints out the URL Database. 
 app.get("/urls.json", (req, res) => {
@@ -144,22 +134,9 @@ app.get("/users.json", (req, res) => {
   res.json(users);
 });
 
+// ------ WEBPAGE ROUTES: ------- //
 
-
-//Sends User Hello Word.
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-//#endregion
-
-
-
-
-// ------ WEBPAGE ROUTES: -------
-
-
-//Sends User Hello.
+//Redirects "/" to /urls.
 app.get("/", (req, res) => {
   if(!req.session.user_id) {
 
@@ -168,25 +145,26 @@ app.get("/", (req, res) => {
   res.redirect('/urls')
 });
 
-//URL GET ROUTES
 
-//#region 
+
+// does tinyURL to longURL redirection.
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
+  // const longURL = urlDatabase[id].longURL;
+  console.log('id is:', id)
   if(!urlDatabase[id]) {
     res.status(404);
     res.send("Error 404: Page not Found.")
   }
+  console.log('urlDatabase is', urlDatabase)
+  console.log('urlDatabase[id] is:', urlDatabase[id])
   res.redirect(urlDatabase[id].longURL);
 });
-//#endregion
+ 
 
-//URL HOMEPAGE ROUTES
+// /urls GET and POST Routes. 
 
-//#region
-
-//show all links. 
-
+// /urls GET route.
 app.get("/urls", (req, res) => {
   const user = users[req.session.user_id]
   const personalURLs = userURLObjects(req.session.user_id)
@@ -196,30 +174,33 @@ app.get("/urls", (req, res) => {
   };
   if(!req.session.user_id) {
     res.status(403);
-    res.send("Error 403: Please Login or Register First.")
-    // res.redirect('/login')
+    // res.send("Error 403: Please Login or Register First.")
+    res.redirect('/login')
   }
   console.log('templateVars being used by /urls', templateVars)
   res.render('urls_index', templateVars);
 });
 
-//delete a url on the urls homepage.
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  if(urlDatabase[shortURL].userID !== req.session.user_id) {
+// /urls POST route.
+app.post("/urls", (req, res) => {
+  const newLink = generateRandomID();
+  console.log(newLink)
+  if(!req.session.user_id) {
     res.status(403);
-    res.send("Verboten. Don't change someone else's links.")
+    res.send('invalid path. please login.')
   }
-  delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls')
+  
+  console.log('urlDatabase before addition is', urlDatabase);
+  urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.session.user_id}
+  console.log('urlDatabase after addition is', urlDatabase);
+  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
-//#endregion
+ 
 
-//CREATE NEW LINK ROUTES 
-
-//#region 
-//create a new link.
+// /urls/new GET route.
+  
+// /urls/new GET route.
 app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
   console.log('/urls/new')
   const user = users[req.session.user_id] //-> take recieved cookie and find object.
@@ -230,30 +211,15 @@ app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
   if(!req.session.user_id) {
     res.redirect('/login');
   }
-  console.log('templateVars being sent from urls/new', templateVars);
   res.render("urls_new", templateVars);
 
 });
 
-//works w /new client side; adds new entry to the database.
-app.post("/urls/", (req, res) => {
-  const newLink = generateRandomID();
-  if(!req.session.user_id) {
-    res.status(403);
-    res.send('invalid path. please login.')
-  }
+ 
 
-  urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.session.user_id}
-  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
-});
+// /urls/new GET and POST routes.
 
-//#endregion
-
-//REGISTER ROUTES 
-
-//#region
-
-//register.
+// /register GET route.
 app.get("/register", (req, res) => {
   const templateVars = {
     userId: req.session.user_id,
@@ -269,7 +235,7 @@ app.get("/register", (req, res) => {
 });
 
 
-//register. 
+// /register POST route.
 app.post("/register", (req, res) => {
   const newUserID = generateRandomID();
   console.log(newUserID)
@@ -298,13 +264,12 @@ app.post("/register", (req, res) => {
   res.redirect('/urls');
 });
 
-//#endregion
+ 
 
-//LOGIN ROUTES 
+// /login GET and POST routes.
 
-//#region
 
-//login.
+// /login GET route.
 
 app.get("/login", (req, res) => {
   const templateVars = {
@@ -319,15 +284,17 @@ app.get("/login", (req, res) => {
 });
 
 
-//login.
+// /login POST route.
 app.post("/login", (req, res) => {
   console.log('candidate email is: ', req.body.email)
   console.log('candidate password is: ', req.body.password)
   const isValidEmail = searchEmail(req.body.email);
   const userID = getIDByEmail(req.body.email);
+  //if email is correct:
   if(isValidEmail) {
+    //if password is correct:
     if(bcrypt.compareSync(req.body.password, userID.password)) {
-      // issue new cookie.
+      //issue new cookie.
       req.session.user_id = userID.id;
       console.log('req.session.user_id is:', )
       res.redirect('/urls');
@@ -337,27 +304,24 @@ app.post("/login", (req, res) => {
     }
   } else {
     res.status(403)
-    res.send('invalid email. Maybe look at the register pge instead?')
+    res.send('invalid email. Maybe look at the register page instead?')
   }
 
 });
 
-//logout. 
+// /logout POST route. Used in the Header bar Logout button.
 
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect('/urls');
   console.log(req.body.email);
 });
-//show an individual link. 
 
-//#endregion
 
-//URL/:shortURL ROUTES.
+// /urls/:shortURL GET and POST routes.
 
-//#region 
 
-//tinylink page
+// /urls/:shortURL GET route.
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const personalURLs = userURLObjects(req.session.user_id) 
@@ -369,11 +333,11 @@ app.get('/urls/:shortURL', (req, res) => {
   }
   if(!urlDatabase[shortURL]) {
     res.status(403);
-    res.send("Error 403: Please make a shortURL before trying to view it.");
+    res.send("Please make a shortURL before trying to view it.");
   }
   if(urlDatabase[shortURL].userID !== req.session.user_id) {
     res.status(403)
-    res.send("Error 403: Verboten. Don't change someone else's links.")
+    res.send("Verboten. Don't change someone else's links.")
   }
   
   const templateVars = { 
@@ -388,8 +352,7 @@ app.get('/urls/:shortURL', (req, res) => {
   // res.end('This is our test string.' + shortURL)
 });
 
-//show and edit a link. --> related to urls_show.ejs
-
+// /urls/:shortURL POST route.
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   if(!req.session.user_id) {
@@ -408,61 +371,19 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls')
 });
 
-
-//#endregion 
-
-module.exports = {
-  urlDatabase,
-  users
-}
-
+// Delete button route.
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if(urlDatabase[shortURL].userID !== req.session.user_id) {
+    res.status(403);
+    res.send("Verboten. Don't change someone else's links.")
+  }
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls')
+});
 
 
 //SERVER INITIALIZATION: 
-
-//#region
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-//#endregion
-
-
-
-//OLD TEST CODE.
-
-//#region
-
-//update a url.
-
-//FIRST ATTEMPT:
-// app.post("/urls/:id", (req, res) => {
-//   console.log(req.body);  // Log the POST request body to the console
-//   urlDatabase["abc"] = req.body.longURL
-//   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
-// });
-
-// app.post("/urls/:shortURL/edit", (req, res) => {
-//   console.log(req.body);  // Log the POST request body to the console
-//   let shortURL = req.body.shortURL
-//   urlDatabase[req.body.shortURL] = req.body.longURL
-//   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
-// });
-
-// app.get('/u/:shortURL', (req, res)=> {
-//   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
-//   let shortURL = req.params.shortURL;
-//   let longURL = urlDatabase[shortURL]
-//   const templateVars = {
-//     uusername: req.session.user_id,
-//     user: users[req.session.user_id],
-//     shortURL: shortURL,
-//     longURL: longURL,
-//   }
-//   res.render('urls_show', templateVars);
-//   // res.end('This is our test string.' + shortURL)
-// });
-
-//#endregion
-

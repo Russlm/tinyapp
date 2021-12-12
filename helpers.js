@@ -23,9 +23,9 @@ const urlDatabase = {
 };
 
 //randomization code.
-const generateRandomID= () => {
-  return Math.random().toString(36).slice(7)
-}
+// const generateRandomID= () => {
+//   return Math.random().toString(36).slice(7)
+// }
 
 const searchEmail= (email) => {
   data = Object.values(users);
@@ -92,6 +92,16 @@ console.log(getIDByEmail('user2@example.com'))
 
 console.log(userURLObjects("user2RandomID"))
 console.log(urlsForUser("user2RandomID"))
+const generateRandomID= () => {
+  function randomString(anysize, charset) {
+     let res = '';
+     while (anysize--) res += charset[Math.random() * charset.length | 0];
+     return res;
+   }
+   return randomString(6,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
+ }
+
+console.log(typeof generateRandomID())
 // console.log(urlDatabase['b6UTxQ'].userID)
 
 module.exports = {
