@@ -68,6 +68,17 @@ const shortURLsforUser = (userID) => {
   }
   return output
 }
+const urlsForUser = (userID) => {
+  // const shortURL =Object.keys(urlDatabase);
+  const output = [];
+  for (key in urlDatabase) {
+    if (urlDatabase[key].userID === userID) {
+      output.push(key);
+    }
+  }
+  return output
+}
+
 
 const generateRandom= () => {
   return Math.random().toString(36).slice(6)
@@ -78,4 +89,5 @@ const generateRandom= () => {
 // console.log(getIDByEmail('user2@example.com'))
 
 console.log(shortURLsforUser("user2RandomID"))
+console.log(keysforUser("user2RandomID"))
 // console.log(urlDatabase['b6UTxQ'].userID)

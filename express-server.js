@@ -90,17 +90,18 @@ const passwordCheck = (id, password) => {
   return false;
 }
 
-const keysforUser = (userID) => {
-  const shortURL =Object.keys(urlDatabase);
-  const output = {};
-  for (shortURL in urlDatabase) {
-    if (shortURL.userID === userID) {
-      output(userID) = shortURL;
+const urlsForUser = (userID) => {
+  // const shortURL =Object.keys(urlDatabase);
+  const output = [];
+  for (key in urlDatabase) {
+    if (urlDatabase[key].userID === userID) {
+      output.push(key);
     }
   }
+  return output
 }
 
-const shortURLsForUser = (userID) => {
+const userURLObjects = (userID) => {
   // const shortURL =Object.keys(urlDatabase);
   const output = {};
   for (let shortURL in urlDatabase) {
@@ -169,7 +170,7 @@ app.get('/u/:id', (req, res) => {
 app.get("/urls", (req, res) => {
   console.log('cookie data working with in urls',req.cookies['email'])
   const user = users[req.cookies["user_id"]]
-  const personalURLs = shortURLsForUser(req.cookies['user_id'])
+  const personalURLs = userURLObjects(req.cookies['user_id'])
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: personalURLs, 
@@ -336,13 +337,22 @@ app.post("/logout", (req, res) => {
 //tinylink page
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const personalURLs = shortURLsForUser(req.cookies["user_id"]) 
+  const personalURLs = userURLObjects(req.cookies["user_id"]) 
   console.log("personalURLS", personalURLs)
   const user = users[req.cookies["user_id"]] 
+  if(!req.cookies["user_id"]) {
+    res.status(403);
+    res.redirect('/urls');
+  }
+  if(!urlDatabase[shortURL]) {
+    res.status(403);
+    res.send("Please make a shortURL before trying to view it.");
+  }
   if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
     res.status(403)
     res.send("Verboten. Don't change someone else's links.")
   }
+  
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     shortURL,
@@ -359,6 +369,14 @@ app.get('/urls/:shortURL', (req, res) => {
 
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
+  if(!req.cookies["user_id"]) {
+    res.status(403);
+    res.redirect('/urls');
+  }
+  if(!urlDatabase[shortURL]) {
+    res.status(403);
+    res.send("Please make a shortURL before trying to view it.");
+  }
   if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
     res.status(403)
     res.send("Verboten. Don't change someone else's links.")
