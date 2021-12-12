@@ -136,14 +136,7 @@ app.get("/users.json", (req, res) => {
   res.json(users);
 });
 
-//Sends User Hello.
-app.get("/", (req, res) => {
-  if(!req.session.user_id) {
 
-    res.redirect('/login')
-  }
-  res.redirect('/urls')
-});
 
 //Sends User Hello Word.
 app.get("/hello", (req, res) => {
@@ -157,16 +150,25 @@ app.get("/hello", (req, res) => {
 
 // ------ WEBPAGE ROUTES: -------
 
+
+//Sends User Hello.
+app.get("/", (req, res) => {
+  if(!req.session.user_id) {
+
+    res.redirect('/login')
+  }
+  res.redirect('/urls')
+});
+
 //URL GET ROUTES
 
 //#region 
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  // if(!req.session.user_id) {
-  //   res.status(403);
-  //   // res.send("Please Login or Register First.")
-  //   res.redirect('/login')
-  // }
+  if(!urlDatabase[id]) {
+    res.status(404);
+    res.send("Error 404: Page not Found.")
+  }
   res.redirect(urlDatabase[id].longURL);
 });
 //#endregion
@@ -389,11 +391,11 @@ app.post('/urls/:shortURL', (req, res) => {
   }
   if(!urlDatabase[shortURL]) {
     res.status(403);
-    res.send("Please make a shortURL before trying to view it.");
+    res.send("Error 403: Please make a shortURL before trying to view it.");
   }
   if(urlDatabase[shortURL].userID !== req.session.user_id) {
     res.status(403)
-    res.send("Verboten. Don't change someone else's links.")
+    res.send("Error 403: Verboten. Don't change someone else's links.")
   }
   urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session.user_id}
   res.redirect('/urls')
