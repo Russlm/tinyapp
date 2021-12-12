@@ -6,6 +6,14 @@ const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session')
+const {
+  generateRandomID,
+  searchEmail,
+  getIDByEmail,
+  passwordCheck,
+  urlsForUser,
+  userURLObjects,
+} = require("./helpers")
 
 //#endregion
 
@@ -58,68 +66,68 @@ const users = {
 
 //#region
 
-//randomization code.
-const generateRandomID= () => {
-  return Math.random().toString(36).slice(7)
-}
+// //randomization code.
+// const generateRandomID= () => {
+//   return Math.random().toString(36).slice(7)
+// }
 
-const searchEmail= (email) => {
-  data = Object.values(users);
-  console.log('database input into the searchEmail fn:', data);
-  for (let element of data) {
-    console.log("element email is", element.email)
-    console.log("compared email is", email)
-    if(email === element.email) {
-      return true;
-    }
-  }
-  return false;
-}
+// const searchEmail= (email) => {
+//   data = Object.values(users);
+//   console.log('database input into the searchEmail fn:', data);
+//   for (let element of data) {
+//     console.log("element email is", element.email)
+//     console.log("compared email is", email)
+//     if(email === element.email) {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
 
-const getIDByEmail = (email) => {
-  data = Object.values(users);
-  console.log('database input into the getIDByEmail fn:',data);
-  for (let element of data) {
-    console.log("element email is", element.email)
-    console.log("compared email is", email)
-    if(email === element.email) {
-      return element;
-    }
-  }
-  return false;
-}
+// const getIDByEmail = (email) => {
+//   data = Object.values(users);
+//   console.log('database input into the getIDByEmail fn:',data);
+//   for (let element of data) {
+//     console.log("element email is", element.email)
+//     console.log("compared email is", email)
+//     if(email === element.email) {
+//       return element;
+//     }
+//   }
+//   return false;
+// }
 
-const passwordCheck = (id, password) => {
-  if(password === id.password) {
-    return true;
-  }
-  return false;
-}
+// const passwordCheck = (id, password) => {
+//   if(password === id.password) {
+//     return true;
+//   }
+//   return false;
+// }
 
-const urlsForUser = (userID) => {
-  // const shortURL =Object.keys(urlDatabase);
-  const output = [];
-  for (key in urlDatabase) {
-    if (urlDatabase[key].userID === userID) {
-      output.push(key);
-    }
-  }
-  return output
-}
+// const urlsForUser = (userID) => {
+//   // const shortURL =Object.keys(urlDatabase);
+//   const output = [];
+//   for (key in urlDatabase) {
+//     if (urlDatabase[key].userID === userID) {
+//       output.push(key);
+//     }
+//   }
+//   return output
+// }
 
-const userURLObjects = (userID) => {
-  // const shortURL =Object.keys(urlDatabase);
-  const output = {};
-  for (let shortURL in urlDatabase) {
-    console.log(shortURL)
-    console.log('userid is ', )
-    if (urlDatabase[shortURL].userID === userID) {
-      output[shortURL] = urlDatabase[shortURL].longURL;
-      console.log('shortURL is', shortURL, 'output now is', output)
-    }
-  }
-  return output
-}
+// const userURLObjects = (userID) => {
+//   // const shortURL =Object.keys(urlDatabase);
+//   const output = {};
+//   for (let shortURL in urlDatabase) {
+//     console.log(shortURL)
+//     console.log('userid is ', )
+//     if (urlDatabase[shortURL].userID === userID) {
+//       output[shortURL] = urlDatabase[shortURL].longURL;
+//       console.log('shortURL is', shortURL, 'output now is', output)
+//     }
+//   }
+//   return output
+// }
 //#endregion
 
 //DEV GET REQUESTS:
@@ -285,7 +293,7 @@ app.post("/register", (req, res) => {
     password: hashedPassword,
   }
   // req.session.user_id = newUserID;
-  res.cookie('user_id', newUserID); 
+  req.session.user_id = newUserID; 
   console.log(users);
   res.redirect('/urls');
 });
@@ -320,7 +328,6 @@ app.post("/login", (req, res) => {
   if(isValidEmail) {
     if(bcrypt.compareSync(req.body.password, userID.password)) {
       // issue new cookie.
-      // res.cookie('user_id', userID.id);
       req.session.user_id = userID.id;
       console.log('req.session.user_id is:', )
       res.redirect('/urls');
@@ -404,6 +411,10 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //#endregion 
 
+module.exports = {
+  urlDatabase,
+  users
+}
 
 
 

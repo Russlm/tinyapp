@@ -43,11 +43,11 @@ const searchEmail= (email) => {
 const getIDByEmail = (email) => {
   data = Object.values(users);
   console.log('database input into the getIDByEmail fn:',data);
-  for (let user of data) {
+  for (let element of data) {
     console.log("element email is", element.email)
     console.log("compared email is", email)
     if(email === element.email) {
-      return user;
+      return element;
     }
   }
   return false;
@@ -86,9 +86,20 @@ const userURLObjects = (userID) => {
 }
 
 
-// console.log(searchEmail('user2@example.com'))
-// console.log(getIDByEmail('user2@example.com'))
 
-console.log(shortURLsforUser("user2RandomID"))
-console.log(keysforUser("user2RandomID"))
+console.log(searchEmail('user2@example.com'))
+console.log(getIDByEmail('user2@example.com'))
+
+console.log(userURLObjects("user2RandomID"))
+console.log(urlsForUser("user2RandomID"))
 // console.log(urlDatabase['b6UTxQ'].userID)
+
+module.exports = {
+  generateRandomID,
+  searchEmail,
+  getIDByEmail,
+  passwordCheck,
+  urlsForUser,
+  userURLObjects,
+  getIDByEmail
+}
