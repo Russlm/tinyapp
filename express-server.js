@@ -138,7 +138,11 @@ app.get("/users.json", (req, res) => {
 
 //Sends User Hello.
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if(!req.session.user_id) {
+
+    res.redirect('/login')
+  }
+  res.redirect('/urls')
 });
 
 //Sends User Hello Word.
@@ -316,7 +320,7 @@ app.post("/login", (req, res) => {
       // issue new cookie.
       // res.cookie('user_id', userID.id);
       req.session.user_id = userID.id;
-      console.log('req.session.user_id is:', req.session.user_id)
+      console.log('req.session.user_id is:', )
       res.redirect('/urls');
     } else {
       res.status(403)

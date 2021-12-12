@@ -22,9 +22,14 @@ const urlDatabase = {
   }
 };
 
+//randomization code.
+const generateRandomID= () => {
+  return Math.random().toString(36).slice(7)
+}
+
 const searchEmail= (email) => {
-  let data = Object.values(users);
-  console.log(data);
+  data = Object.values(users);
+  console.log('database input into the searchEmail fn:', data);
   for (let element of data) {
     console.log("element email is", element.email)
     console.log("compared email is", email)
@@ -37,12 +42,12 @@ const searchEmail= (email) => {
 
 const getIDByEmail = (email) => {
   data = Object.values(users);
-  console.log(data);
-  for (let element of data) {
+  console.log('database input into the getIDByEmail fn:',data);
+  for (let user of data) {
     console.log("element email is", element.email)
     console.log("compared email is", email)
     if(email === element.email) {
-      return element;
+      return user;
     }
   }
   return false;
@@ -55,19 +60,6 @@ const passwordCheck = (id, password) => {
   return false;
 }
 
-const shortURLsforUser = (userID) => {
-  // const shortURL =Object.keys(urlDatabase);
-  const output = {};
-  for (let shortURL in urlDatabase) {
-    console.log(shortURL)
-    console.log('userid is ', )
-    if (urlDatabase[shortURL].userID === userID) {
-      output[shortURL] = urlDatabase[shortURL].longURL;
-      console.log('shortURL is', shortURL, 'output now is', output)
-    }
-  }
-  return output
-}
 const urlsForUser = (userID) => {
   // const shortURL =Object.keys(urlDatabase);
   const output = [];
@@ -79,9 +71,18 @@ const urlsForUser = (userID) => {
   return output
 }
 
-
-const generateRandom= () => {
-  return Math.random().toString(36).slice(6)
+const userURLObjects = (userID) => {
+  // const shortURL =Object.keys(urlDatabase);
+  const output = {};
+  for (let shortURL in urlDatabase) {
+    console.log(shortURL)
+    console.log('userid is ', )
+    if (urlDatabase[shortURL].userID === userID) {
+      output[shortURL] = urlDatabase[shortURL].longURL;
+      console.log('shortURL is', shortURL, 'output now is', output)
+    }
+  }
+  return output
 }
 
 
