@@ -186,8 +186,8 @@ app.get("/urls", (req, res) => {
   };
   if(!req.session.user_id) {
     res.status(403);
-    // res.send("Please Login or Register First.")
-    res.redirect('/login')
+    res.send("Error 403: Please Login or Register First.")
+    // res.redirect('/login')
   }
   console.log('templateVars being used by /urls', templateVars)
   res.render('urls_index', templateVars);
