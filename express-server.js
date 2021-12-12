@@ -228,7 +228,7 @@ app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
 });
 
 //works w /new client side; adds new entry to the database.
-app.post("/urls/new", (req, res) => {
+app.post("/urls/", (req, res) => {
   const newLink = generateRandomID();
   if(!req.session.user_id) {
     res.status(403);
@@ -362,11 +362,11 @@ app.get('/urls/:shortURL', (req, res) => {
   }
   if(!urlDatabase[shortURL]) {
     res.status(403);
-    res.send("Please make a shortURL before trying to view it.");
+    res.send("Error 403: Please make a shortURL before trying to view it.");
   }
   if(urlDatabase[shortURL].userID !== req.session.user_id) {
     res.status(403)
-    res.send("Verboten. Don't change someone else's links.")
+    res.send("Error 403: Verboten. Don't change someone else's links.")
   }
   
   const templateVars = { 
