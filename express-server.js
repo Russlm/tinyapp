@@ -22,13 +22,6 @@ app.set('view engine', 'ejs');
 //DATABASES.
 
 //#region
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
-
-// urlDatabase[shortURL].longURL how to do this 
-// how do i use userid in the urlDatabase
 
 const urlDatabase = {
     b6UTxQ: {
@@ -148,8 +141,9 @@ app.get("/hello", (req, res) => {
 
 //#endregion
 
+// ------ WEBPAGE ROUTES: -------
 
-// GET REQUESTS ////
+//URL HOMEPAGE ROUTES
 
 //#region
 
@@ -170,21 +164,18 @@ app.get("/urls", (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-//works w /new client side; adds new entry to the database.
-app.post("/urls/new", (req, res) => {
-  const newUserID = generateRandomID();
-  if(!req.cookies["user_id"]) {
-    res.status(403);
-    res.send('invalid path. please login.')
-  }
-
-  urlDatabase[newUserID] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
-  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
+//delete a url on the urls homepage.
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls')
 });
 
+//#endregion
 
+//CREATE NEW LINK ROUTES 
+
+//#region 
 //create a new link.
-
 app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
   console.log('/urls/new')
   const user = users[req.cookies["user_id"]] //-> take recieved cookie and find object.
@@ -200,8 +191,25 @@ app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
 
 });
 
-//register.
+//works w /new client side; adds new entry to the database.
+app.post("/urls/new", (req, res) => {
+  const newUserID = generateRandomID();
+  if(!req.cookies["user_id"]) {
+    res.status(403);
+    res.send('invalid path. please login.')
+  }
 
+  urlDatabase[newUserID] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
+  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
+});
+
+//#endregion
+
+//REGISTER ROUTES 
+
+//#region
+
+//register.
 app.get("/register", (req, res) => {
   const templateVars = {
     userId: req.cookies["user_id"],
@@ -216,6 +224,36 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+
+//register. 
+app.post("/register", (req, res) => {
+  const newUserID = generateRandomID();
+  console.log(newUserID)
+  if(!req.body.password || !req.body.email) {
+    res.status(400);
+    res.send('Please make sure email or password are filled out correctly. 🤨');
+  }
+
+  // if email matches email in database. 
+  if(searchEmail(req.body.email)) {
+    res.status(400);
+    res.send('Email in use. 😅')
+  }
+  users[newUserID] = {
+    id: newUserID, 
+    email: req.body.email, 
+    password: req.body.password,
+  }
+  res.cookie('user_id', newUserID); 
+  console.log(users);
+  res.redirect('/urls');
+});
+
+//#endregion
+
+//LOGIN ROUTES 
+
+//#region
 //login.
 
 app.get("/login", (req, res) => {
@@ -230,39 +268,6 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
-//show an individual link. 
-
-app.get('/urls/:shortURL', (req, res) => {
-  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
-  const shortURL = req.params.shortURL;
-  const personalURLs = shortURLsforUser(req.cookies["user_id"]) 
-  console.log("personalURLS", personalURLs)
-  const user = users[req.cookies["user_id"]] 
-  const templateVars = { 
-    user: user, // -> object with id: value, password: value, email: vlaue 
-    shortURL,
-    personalURLs,
-  };
-  console.log('cookie sourced userID:', req.cookies["user_id"])
-  console.log('user object:', users[req.cookies["user_id"]])
-  console.log('templateVars being sent', templateVars)
-  res.render('urls_show', templateVars);
-  // res.end('This is our test string.' + shortURL)
-});
-
-//#endregion 
-
-
-//POST REQUESTS 
-
-//#region
-
-
-//delete a url.
-app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls')
-});
 
 //login.
 app.post("/login", (req, res) => {
@@ -292,29 +297,30 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
   console.log(req.body.email);
 });
+//show an individual link. 
 
-//register. 
-app.post("/register", (req, res) => {
-  const newUserID = generateRandomID();
-  console.log(newUserID)
-  if(!req.body.password || !req.body.email) {
-    res.status(400);
-    res.send('Please make sure email or password are filled out correctly. 🤨');
-  }
+//#endregion
 
-  // if email matches email in database. 
-  if(searchEmail(req.body.email)) {
-    res.status(400);
-    res.send('Email in use. 😅')
-  }
-  users[newUserID] = {
-    id: newUserID, 
-    email: req.body.email, 
-    password: req.body.password,
-  }
-  res.cookie('user_id', newUserID); 
-  console.log(users);
-  res.redirect('/urls');
+//INDIVDUAL TINY LINK PAGE ROUTES.
+
+//#region 
+//tinylink page
+app.get('/urls/:shortURL', (req, res) => {
+  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
+  const shortURL = req.params.shortURL;
+  const personalURLs = shortURLsforUser(req.cookies["user_id"]) 
+  console.log("personalURLS", personalURLs)
+  const user = users[req.cookies["user_id"]] 
+  const templateVars = { 
+    user: user, // -> object with id: value, password: value, email: vlaue 
+    shortURL,
+    personalURLs,
+  };
+  console.log('cookie sourced userID:', req.cookies["user_id"])
+  console.log('user object:', users[req.cookies["user_id"]])
+  console.log('templateVars being sent', templateVars)
+  res.render('urls_show', templateVars);
+  // res.end('This is our test string.' + shortURL)
 });
 
 //show and edit a link. --> related to urls_show.ejs
@@ -328,7 +334,8 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls')
 });
 
-//#endregion
+
+//#endregion 
 
 
 //SERVER INITIALIZATION: 
