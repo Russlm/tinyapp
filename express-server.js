@@ -17,6 +17,7 @@ const PORT = 8080; // default port 8080
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
+// app.use(cookieParser())
 app.use(cookieSession({
   name: 'session',
   keys: ['key1337'],
@@ -157,7 +158,7 @@ app.get("/hello", (req, res) => {
 //#region 
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  // if(!req.cookies["user_id"]) {
+  // if(!req.session.user_id) {
   //   res.status(403);
   //   // res.send("Please Login or Register First.")
   //   res.redirect('/login')
@@ -173,14 +174,13 @@ app.get('/u/:id', (req, res) => {
 //show all links. 
 
 app.get("/urls", (req, res) => {
-  console.log('cookie data working with in urls',req.cookies['email'])
-  const user = users[req.cookies["user_id"]]
-  const personalURLs = userURLObjects(req.cookies['user_id'])
+  const user = users[req.session.user_id]
+  const personalURLs = userURLObjects(req.session.user_id)
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: personalURLs, 
   };
-  if(!req.cookies["user_id"]) {
+  if(!req.session.user_id) {
     res.status(403);
     // res.send("Please Login or Register First.")
     res.redirect('/login')
@@ -192,7 +192,7 @@ app.get("/urls", (req, res) => {
 //delete a url on the urls homepage.
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
+  if(urlDatabase[shortURL].userID !== req.session.user_id) {
     res.status(403);
     res.send("Verboten. Don't change someone else's links.")
   }
@@ -208,12 +208,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //create a new link.
 app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
   console.log('/urls/new')
-  const user = users[req.cookies["user_id"]] //-> take recieved cookie and find object.
+  const user = users[req.session.user_id] //-> take recieved cookie and find object.
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
-  if(!req.cookies["user_id"]) {
+  if(!req.session.user_id) {
     res.redirect('/login');
   }
   console.log('templateVars being sent from urls/new', templateVars);
@@ -224,12 +224,12 @@ app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
 //works w /new client side; adds new entry to the database.
 app.post("/urls/new", (req, res) => {
   const newLink = generateRandomID();
-  if(!req.cookies["user_id"]) {
+  if(!req.session.user_id) {
     res.status(403);
     res.send('invalid path. please login.')
   }
 
-  urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
+  urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.session.user_id}
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
@@ -242,11 +242,11 @@ app.post("/urls/new", (req, res) => {
 //register.
 app.get("/register", (req, res) => {
   const templateVars = {
-    userId: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    userId: req.session.user_id,
+    user: users[req.session.user_id]
   };
-  console.log('/register req.cookies =', req.cookies["user_id"])
-  if(req.cookies["user_id"]) {
+  console.log('/register req.cookies =', req.session.user_id)
+  if(req.session.user_id) {
     res.redirect('/urls');
   }
   console.log('templateVars being sent from urls/new', templateVars);
@@ -278,6 +278,7 @@ app.post("/register", (req, res) => {
     email: req.body.email, 
     password: hashedPassword,
   }
+  // req.session.user_id = newUserID;
   res.cookie('user_id', newUserID); 
   console.log(users);
   res.redirect('/urls');
@@ -293,10 +294,10 @@ app.post("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = {
-    userID: req.cookies["user_id"],
-    user: users[req.cookies["user_id"]]
+    userID: req.session.user_id,
+    user: users[req.session.user_id]
   };
-  if(req.cookies["user_id"]) {
+  if(req.session.user_id) {
     res.redirect('/urls');
   }
   console.log('templateVars being sent from /login', templateVars)
@@ -312,7 +313,10 @@ app.post("/login", (req, res) => {
   const userID = getIDByEmail(req.body.email);
   if(isValidEmail) {
     if(bcrypt.compareSync(req.body.password, userID.password)) {
-      res.cookie('user_id', userID.id);
+      // issue new cookie.
+      // res.cookie('user_id', userID.id);
+      req.session.user_id = userID.id;
+      console.log('req.session.user_id is:', req.session.user_id)
       res.redirect('/urls');
     } else {
       res.status(403)
@@ -328,7 +332,7 @@ app.post("/login", (req, res) => {
 //logout. 
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect('/urls');
   console.log(req.body.email);
 });
@@ -343,10 +347,10 @@ app.post("/logout", (req, res) => {
 //tinylink page
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const personalURLs = userURLObjects(req.cookies["user_id"]) 
+  const personalURLs = userURLObjects(req.session.user_id) 
   console.log("personalURLS", personalURLs)
-  const user = users[req.cookies["user_id"]] 
-  if(!req.cookies["user_id"]) {
+  const user = users[req.session.user_id] 
+  if(!req.session.user_id) {
     res.status(403);
     res.redirect('/urls');
   }
@@ -354,7 +358,7 @@ app.get('/urls/:shortURL', (req, res) => {
     res.status(403);
     res.send("Please make a shortURL before trying to view it.");
   }
-  if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
+  if(urlDatabase[shortURL].userID !== req.session.user_id) {
     res.status(403)
     res.send("Verboten. Don't change someone else's links.")
   }
@@ -364,8 +368,8 @@ app.get('/urls/:shortURL', (req, res) => {
     shortURL,
     personalURLs,
   };
-  console.log('cookie sourced userID:', req.cookies["user_id"])
-  console.log('user object:', users[req.cookies["user_id"]])
+  console.log('cookie sourced userID:', req.session.user_id)
+  console.log('user object:', users[req.session.user_id])
   console.log('templateVars being sent', templateVars)
   res.render('urls_show', templateVars);
   // res.end('This is our test string.' + shortURL)
@@ -375,7 +379,7 @@ app.get('/urls/:shortURL', (req, res) => {
 
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  if(!req.cookies["user_id"]) {
+  if(!req.session.user_id) {
     res.status(403);
     res.redirect('/urls');
   }
@@ -383,11 +387,11 @@ app.post('/urls/:shortURL', (req, res) => {
     res.status(403);
     res.send("Please make a shortURL before trying to view it.");
   }
-  if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
+  if(urlDatabase[shortURL].userID !== req.session.user_id) {
     res.status(403)
     res.send("Verboten. Don't change someone else's links.")
   }
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session.user_id}
   res.redirect('/urls')
 });
 
@@ -434,8 +438,8 @@ app.listen(PORT, () => {
 //   let shortURL = req.params.shortURL;
 //   let longURL = urlDatabase[shortURL]
 //   const templateVars = {
-//     uusername: req.cookies["user_id"],
-//     user: users[req.cookies["user_id"]],
+//     uusername: req.session.user_id,
+//     user: users[req.session.user_id],
 //     shortURL: shortURL,
 //     longURL: longURL,
 //   }
