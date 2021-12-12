@@ -141,7 +141,18 @@ app.get("/hello", (req, res) => {
 
 //#endregion
 
+
+
+
 // ------ WEBPAGE ROUTES: -------
+
+//URL GET ROUTES
+
+app.get('/u/:id', (req, res) => {
+  const id = req.params.id;
+  
+  res.redirect(urlDatabase[id].longURL);
+});
 
 //URL HOMEPAGE ROUTES
 
@@ -229,16 +240,19 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const newUserID = generateRandomID();
   console.log(newUserID)
+
+  //if empty data fields:
   if(!req.body.password || !req.body.email) {
     res.status(400);
     res.send('Please make sure email or password are filled out correctly. 🤨');
   }
 
-  // if email matches email in database. 
+  // if email matches email in database: 
   if(searchEmail(req.body.email)) {
     res.status(400);
     res.send('Email in use. 😅')
   }
+  //create user:
   users[newUserID] = {
     id: newUserID, 
     email: req.body.email, 
@@ -301,9 +315,10 @@ app.post("/logout", (req, res) => {
 
 //#endregion
 
-//INDIVDUAL TINY LINK PAGE (EDIT) ROUTES.
+//URL/:shortURL ROUTES.
 
 //#region 
+
 //tinylink page
 app.get('/urls/:shortURL', (req, res) => {
   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
@@ -333,6 +348,8 @@ app.post('/urls/:shortURL', (req, res) => {
 
 
 //#endregion 
+
+
 
 
 //SERVER INITIALIZATION: 
