@@ -100,7 +100,7 @@ const keysforUser = (userID) => {
   }
 }
 
-const shortURLsforUser = (userID) => {
+const shortURLsForUser = (userID) => {
   // const shortURL =Object.keys(urlDatabase);
   const output = {};
   for (let shortURL in urlDatabase) {
@@ -148,11 +148,17 @@ app.get("/hello", (req, res) => {
 
 //URL GET ROUTES
 
+//#region 
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  
+  // if(!req.cookies["user_id"]) {
+  //   res.status(403);
+  //   // res.send("Please Login or Register First.")
+  //   res.redirect('/login')
+  // }
   res.redirect(urlDatabase[id].longURL);
 });
+//#endregion
 
 //URL HOMEPAGE ROUTES
 
@@ -163,13 +169,15 @@ app.get('/u/:id', (req, res) => {
 app.get("/urls", (req, res) => {
   console.log('cookie data working with in urls',req.cookies['email'])
   const user = users[req.cookies["user_id"]]
-  const personalURLs = shortURLsforUser(req.cookies['user_id'])
+  const personalURLs = shortURLsForUser(req.cookies['user_id'])
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: personalURLs, 
   };
   if(!req.cookies["user_id"]) {
-    res.redirect('/login');
+    res.status(403);
+    // res.send("Please Login or Register First.")
+    res.redirect('/login')
   }
   console.log('templateVars being used by /urls', templateVars)
   res.render('urls_index', templateVars);
@@ -177,6 +185,11 @@ app.get("/urls", (req, res) => {
 
 //delete a url on the urls homepage.
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
+    res.status(403);
+    res.send("Verboten. Don't change someone else's links.")
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls')
 });
@@ -268,6 +281,7 @@ app.post("/register", (req, res) => {
 //LOGIN ROUTES 
 
 //#region
+
 //login.
 
 app.get("/login", (req, res) => {
@@ -321,11 +335,14 @@ app.post("/logout", (req, res) => {
 
 //tinylink page
 app.get('/urls/:shortURL', (req, res) => {
-  // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
   const shortURL = req.params.shortURL;
-  const personalURLs = shortURLsforUser(req.cookies["user_id"]) 
+  const personalURLs = shortURLsForUser(req.cookies["user_id"]) 
   console.log("personalURLS", personalURLs)
   const user = users[req.cookies["user_id"]] 
+  if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
+    res.status(403)
+    res.send("Verboten. Don't change someone else's links.")
+  }
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
     shortURL,
@@ -341,7 +358,11 @@ app.get('/urls/:shortURL', (req, res) => {
 //show and edit a link. --> related to urls_show.ejs
 
 app.post('/urls/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL; 
+  const shortURL = req.params.shortURL;
+  if(urlDatabase[shortURL].userID !== req.cookies["user_id"]) {
+    res.status(403)
+    res.send("Verboten. Don't change someone else's links.")
+  }
   urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
   res.redirect('/urls')
 });
