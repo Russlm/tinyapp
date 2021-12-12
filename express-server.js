@@ -163,11 +163,23 @@ app.get("/urls", (req, res) => {
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: personalURLs, 
   };
-  // if(!req.cookies["user_id"]) {
-  //   res.redirect('/login');
-  // }
+  if(!req.cookies["user_id"]) {
+    res.redirect('/login');
+  }
   console.log('templateVars being used by /urls', templateVars)
   res.render('urls_index', templateVars);
+});
+
+//works w /new client side; adds new entry to the database.
+app.post("/urls/new", (req, res) => {
+  const newUserID = generateRandomID();
+  if(!req.cookies["user_id"]) {
+    res.status(403);
+    res.send('invalid path. please login.')
+  }
+
+  urlDatabase[newUserID] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
+  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
 
@@ -223,13 +235,13 @@ app.get("/login", (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL] 
+  const personalURLs = shortURLsforUser(req.cookies["user_id"]) 
+  console.log("personalURLS", personalURLs)
   const user = users[req.cookies["user_id"]] 
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
-    urls: urlDatabase,
-    longURL,
-    shortURL 
+    shortURL,
+    personalURLs,
   };
   console.log('cookie sourced userID:', req.cookies["user_id"])
   console.log('user object:', users[req.cookies["user_id"]])
@@ -245,17 +257,6 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //#region
 
-//works w /new client side; adds new entry to the database.
-app.post("/urls", (req, res) => {
-  const newUserID = generateRandomID();
-  if(!req.cookies["user_id"]) {
-    res.status(403);
-    res.send('invalid path. please login.')
-  }
-
-  urlDatabase[newUserID] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
-  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
-});
 
 //delete a url.
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -279,7 +280,7 @@ app.post("/login", (req, res) => {
     }
   } else {
     res.status(403)
-    res.send('invalid email.')
+    res.send('invalid email. Maybe look at the register pge instead?')
   }
 
 });
@@ -292,7 +293,7 @@ app.post("/logout", (req, res) => {
   console.log(req.body.email);
 });
 
-//register.
+//register. 
 app.post("/register", (req, res) => {
   const newUserID = generateRandomID();
   console.log(newUserID)
@@ -320,8 +321,10 @@ app.post("/register", (req, res) => {
 
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL; 
+  const personalURLs = shortURLsforUser(shortURL) 
   console.log('incoming params',shortURL);
-  urlDatabase[shortURL] = req.body.longURL;
+  console.log('new url',req.body.longURL);
+  personalURLs[shortURL] = req.body.longURL;
   res.redirect('/urls')
 });
 
