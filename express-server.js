@@ -33,11 +33,11 @@ app.set('view engine', 'ejs');
 const urlDatabase = {
     b6UTxQ: {
         longURL: "https://www.tsn.ca",
-        userID: "aJ48lW"
+        userID: "userRandomID"
     },
     i3BoGr: {
         longURL: "https://www.google.ca",
-        userID: "aJ48lW"
+        userID: "userRandomID"
     }
 };
 
@@ -106,6 +106,20 @@ const keysforUser = (userID) => {
     }
   }
 }
+
+const shortURLsforUser = (userID) => {
+  // const shortURL =Object.keys(urlDatabase);
+  const output = {};
+  for (let shortURL in urlDatabase) {
+    console.log(shortURL)
+    console.log('userid is ', )
+    if (urlDatabase[shortURL].userID === userID) {
+      output[shortURL] = urlDatabase[shortURL].longURL;
+      console.log('shortURL is', shortURL, 'output now is', output)
+    }
+  }
+  return output
+}
 //#endregion
 
 //DEV GET REQUESTS:
@@ -119,7 +133,7 @@ app.get("/urls.json", (req, res) => {
 
 //Prints out the User Database.
 app.get("/users.json", (req, res) => {
-  res.json(urlDatabase);
+  res.json(users);
 });
 
 //Sends User Hello.
@@ -144,9 +158,10 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   console.log('cookie data working with in urls',req.cookies['email'])
   const user = users[req.cookies["user_id"]]
+  const personalURLs = shortURLsforUser(req.cookies['user_id'])
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
-    urls: urlDatabase, 
+    urls: personalURLs, 
   };
   // if(!req.cookies["user_id"]) {
   //   res.redirect('/login');
@@ -205,7 +220,7 @@ app.get("/login", (req, res) => {
 
 //show an individual link. 
 
-app.get('/urls/:shortURL', (req, res)=> {
+app.get('/urls/:shortURL', (req, res) => {
   // res.send('You requested to see ' + urlDatabase[req.params.shortURL])
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL] 
@@ -237,8 +252,8 @@ app.post("/urls", (req, res) => {
     res.status(403);
     res.send('invalid path. please login.')
   }
-  console.log(req.body);  // Log the POST request body to the console
-  urlDatabase[newUserID] = req.body.longURL
+
+  urlDatabase[newUserID] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
