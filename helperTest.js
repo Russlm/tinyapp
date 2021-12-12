@@ -11,6 +11,17 @@ const users = {
   }
 }
 
+const urlDatabase = {
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "user2RandomID"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "user2RandomID"
+  }
+};
+
 const searchEmail= (email) => {
   let data = Object.values(users);
   console.log(data);
@@ -44,5 +55,22 @@ const passwordCheck = (id, password) => {
   return false;
 }
 
-console.log(searchEmail('user2@example.com'))
-console.log(getIDByEmail('user2@example.com'))
+const shortURLsforUser = (userID) => {
+  // const shortURL =Object.keys(urlDatabase);
+  const output = {};
+  for (let shortURL in urlDatabase) {
+    console.log(shortURL)
+    console.log('userid is ', )
+    if (urlDatabase[shortURL].userID === userID) {
+      output[shortURL] = urlDatabase[shortURL].longURL;
+      console.log('shortURL is', shortURL, 'output now is', output)
+    }
+  }
+  return output
+}
+
+// console.log(searchEmail('user2@example.com'))
+// console.log(getIDByEmail('user2@example.com'))
+
+console.log(shortURLsforUser("user2RandomID"))
+// console.log(urlDatabase['b6UTxQ'].userID)

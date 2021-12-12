@@ -22,9 +22,23 @@ app.set('view engine', 'ejs');
 //DATABASES.
 
 //#region
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
+// urlDatabase[shortURL].longURL how to do this 
+// how do i use userid in the urlDatabase
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+    b6UTxQ: {
+        longURL: "https://www.tsn.ca",
+        userID: "aJ48lW"
+    },
+    i3BoGr: {
+        longURL: "https://www.google.ca",
+        userID: "aJ48lW"
+    }
 };
 
 const users = { 
@@ -82,6 +96,16 @@ const passwordCheck = (id, password) => {
   }
   return false;
 }
+
+const keysforUser = (userID) => {
+  const shortURL =Object.keys(urlDatabase);
+  const output = {};
+  for (shortURL in urlDatabase) {
+    if (shortURL.userID === userID) {
+      output(userID) = shortURL;
+    }
+  }
+}
 //#endregion
 
 //DEV GET REQUESTS:
@@ -124,6 +148,9 @@ app.get("/urls", (req, res) => {
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
+  // if(!req.cookies["user_id"]) {
+  //   res.redirect('/login');
+  // }
   console.log('templateVars being used by /urls', templateVars)
   res.render('urls_index', templateVars);
 });
@@ -138,6 +165,9 @@ app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
     user: user, // -> object with id: value, password: value, email: vlaue 
     urls: urlDatabase, 
   };
+  if(!req.cookies["user_id"]) {
+    res.redirect('/login');
+  }
   console.log('templateVars being sent from urls/new', templateVars);
   res.render("urls_new", templateVars);
 
@@ -150,6 +180,10 @@ app.get("/register", (req, res) => {
     userId: req.cookies["user_id"],
     user: users[req.cookies["user_id"]]
   };
+  console.log('/register req.cookies =', req.cookies["user_id"])
+  if(req.cookies["user_id"]) {
+    res.redirect('/urls');
+  }
   console.log('templateVars being sent from urls/new', templateVars);
   console.log('newly issued login cookie from /register:', req.cookies)
   res.render("register", templateVars);
@@ -162,6 +196,9 @@ app.get("/login", (req, res) => {
     userID: req.cookies["user_id"],
     user: users[req.cookies["user_id"]]
   };
+  if(req.cookies["user_id"]) {
+    res.redirect('/urls');
+  }
   console.log('templateVars being sent from /login', templateVars)
   res.render("login", templateVars);
 });
@@ -196,6 +233,10 @@ app.get('/urls/:shortURL', (req, res)=> {
 //works w /new client side; adds new entry to the database.
 app.post("/urls", (req, res) => {
   const newUserID = generateRandomID();
+  if(!req.cookies["user_id"]) {
+    res.status(403);
+    res.send('invalid path. please login.')
+  }
   console.log(req.body);  // Log the POST request body to the console
   urlDatabase[newUserID] = req.body.longURL
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
@@ -242,7 +283,7 @@ app.post("/register", (req, res) => {
   console.log(newUserID)
   if(!req.body.password || !req.body.email) {
     res.status(400);
-    res.send('Please make sure email or password are filled out correctly. 🤨')
+    res.send('Please make sure email or password are filled out correctly. 🤨');
   }
 
   // if email matches email in database. 
