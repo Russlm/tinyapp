@@ -193,13 +193,13 @@ app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
 
 //works w /new client side; adds new entry to the database.
 app.post("/urls/new", (req, res) => {
-  const newUserID = generateRandomID();
+  const newLink = generateRandomID();
   if(!req.cookies["user_id"]) {
     res.status(403);
     res.send('invalid path. please login.')
   }
 
-  urlDatabase[newUserID] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
+  urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
@@ -301,7 +301,7 @@ app.post("/logout", (req, res) => {
 
 //#endregion
 
-//INDIVDUAL TINY LINK PAGE ROUTES.
+//INDIVDUAL TINY LINK PAGE (EDIT) ROUTES.
 
 //#region 
 //tinylink page
@@ -327,10 +327,7 @@ app.get('/urls/:shortURL', (req, res) => {
 
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL; 
-  const personalURLs = shortURLsforUser(shortURL) 
-  console.log('incoming params',shortURL);
-  console.log('new url',req.body.longURL);
-  personalURLs[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies["user_id"]}
   res.redirect('/urls')
 });
 

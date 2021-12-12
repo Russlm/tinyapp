@@ -69,6 +69,11 @@ const shortURLsforUser = (userID) => {
   return output
 }
 
+const generateRandom= () => {
+  return Math.random().toString(36).slice(6)
+}
+
+
 // console.log(searchEmail('user2@example.com'))
 // console.log(getIDByEmail('user2@example.com'))
 
