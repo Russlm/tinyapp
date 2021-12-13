@@ -7,7 +7,6 @@ const cookieSession = require('cookie-session')
 const  {
   generateRandomID,
   getIDByEmail,
-  passwordCheck,
   urlsForUser,
   userURLObjects,
 } = require('./helpers')
@@ -54,20 +53,6 @@ const users = {
   }
 }
  
-//DEV GET REQUESTS:
-
- 
-
-//Prints out the URL Database. 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-//Prints out the User Database.
-app.get("/users.json", (req, res) => {
-  res.json(users);
-});
-
 // ------ WEBPAGE ROUTES: ------- //
 
 //Redirects "/" to /urls.
@@ -84,7 +69,6 @@ app.get("/", (req, res) => {
 // does tinyURL to longURL redirection.
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
-  // const longURL = urlDatabase[id].longURL;
   if(!urlDatabase[id]) {
     res.status(404);
     res.send("Error 404: Page not Found.")
@@ -100,32 +84,33 @@ app.get("/urls", (req, res) => {
   const user = users[req.session.user_id]
   const personalURLs = userURLObjects(req.session.user_id, urlDatabase)
   const templateVars = { 
-    user: user, // -> object with id: value, password: value, email: vlaue 
+    user: user, // -> object with id: value, password: value, email: value 
     urls: personalURLs, 
   };
   if(!req.session.user_id) {
     res.status(403);
-    // res.send("Error 403: Please Login or Register First.")
-    res.redirect('/login')
+    res.send("Error 403: Please Login or Register First.")
   }
   res.render('urls_index', templateVars);
 });
 
 // /urls POST route.
-app.post("/urls/new", (req, res) => {
+app.post("/urls", (req, res) => {
   const newLink = generateRandomID();
   if(!req.session.user_id) {
     res.status(403);
     res.send('invalid path. please login.')
   }
+  if(req.body.longURL) {
+    // res.status(403);
+    // res.send('please fill in the url field.')
+    console.log('longurl is is true')
+  }
+
   urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.session.user_id}
-  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
+  res.redirect("/urls"); 
 });
 
- 
-
-// /urls/new GET route.
-  
 // /urls/new GET route.
 app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
   const user = users[req.session.user_id] //-> take recieved cookie and find object.
@@ -235,7 +220,6 @@ app.post("/logout", (req, res) => {
 
 // /urls/:shortURL GET and POST routes.
 
-
 // /urls/:shortURL GET route.
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
@@ -277,6 +261,10 @@ app.post('/urls/:shortURL', (req, res) => {
   if(urlDatabase[shortURL].userID !== req.session.user_id) {
     res.status(403)
     res.send("Error 403: Verboten. Don't change someone else's links.")
+  }
+  if(!req.body.longURL) {
+    res.status(403);
+    res.send('please fill out the http field.')
   }
   urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session.user_id}
   res.redirect('/urls')
