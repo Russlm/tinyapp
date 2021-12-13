@@ -11,8 +11,19 @@ const generateRandomID= () => {
 const getIDByEmail = (email,database) => {
   data = Object.values(database);
   for (let element of data) {
+    console.log(email)
+    console.log(element.email)
     if(email === element.email) {
       return element;
+    }
+  }
+  return false;
+}
+const searchID = (email,database) => {
+  data = Object.values(database);
+  for (let element of data) {
+    if(email === element.email) {
+      return element.id;
     }
   }
   return false;
@@ -59,9 +70,9 @@ const userURLObjects = (userID, database) => {
 
 module.exports = {
   generateRandomID,
-  searchEmail,
   getIDByEmail,
   passwordCheck,
   urlsForUser,
   userURLObjects,
+  searchID,
 }
