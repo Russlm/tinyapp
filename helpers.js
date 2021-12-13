@@ -1,60 +1,59 @@
-
-const generateRandomID= () => {
-  function randomString(anysize, charset) {
-     let res = '';
-     while (anysize--) res += charset[Math.random() * charset.length | 0];
-     return res;
-   }
-   return randomString(6,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
- }
+const generateRandomID = () => {
+  const randomString = (anysize, charset) => {
+    let res = '';
+    while (anysize--) res += charset[Math.random() * charset.length | 0];
+    return res;
+  };
+  return randomString(6,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
+};
 
 const getIDByEmail = (email,database) => {
-  data = Object.values(database);
+  let data = Object.values(database);
   for (let element of data) {
-    console.log(email)
-    console.log(element.email)
-    if(email === element.email) {
+    console.log(email);
+    console.log(element.email);
+    if (email === element.email) {
       return element;
     }
   }
   return false;
-}
+};
 const searchID = (email,database) => {
-  data = Object.values(database);
+  let data = Object.values(database);
   for (let element of data) {
-    if(email === element.email) {
+    if (email === element.email) {
       return element.id;
     }
   }
   return false;
-}
+};
 
 const passwordCheck = (id, password) => {
-  if(password === id.password) {
+  if (password === id.password) {
     return true;
   }
   return false;
-}
+};
 
 const urlsForUser = (userID, database) => {
   const output = [];
-  for (key in urlDatabase) {
-    if ( database[key].userID === userID) {
+  for (let key in database) {
+    if (database[key].userID === userID) {
       output.push(key);
     }
   }
-  return output
-}
+  return output;
+};
 
 const userURLObjects = (userID, database) => {
   const output = {};
   for (let shortURL in  database) {
-    if ( database[shortURL].userID === userID) {
+    if (database[shortURL].userID === userID) {
       output[shortURL] =  database[shortURL].longURL;
     }
   }
-  return output
-}
+  return output;
+};
 
 //#endregion
 
@@ -75,4 +74,4 @@ module.exports = {
   urlsForUser,
   userURLObjects,
   searchID,
-}
+};
