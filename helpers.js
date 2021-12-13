@@ -1,5 +1,3 @@
-const bcrypt = require('bcryptjs');
-
 
 const generateRandomID= () => {
   function randomString(anysize, charset) {
@@ -68,75 +66,6 @@ const userURLObjects = (userID, database) => {
   }
   return output
 }
-
-//#region
-
-// const generateRandomID= () => {
-//   function randomString(anysize, charset) {
-//      let res = '';
-//      while (anysize--) res += charset[Math.random() * charset.length | 0];
-//      return res;
-//    }
-//    return randomString(6,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
-//  }
-
-// const searchEmail= (email) => {
-//   data = Object.values(users);
-//   console.log('database input into the searchEmail fn:', data);
-//   for (let element of data) {
-//     console.log("element email is", element.email)
-//     console.log("compared email is", email)
-//     if(email === element.email) {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
-
-// const getIDByEmail = (email) => {
-//   data = Object.values(users);
-//   console.log('database input into the getIDByEmail fn:',data);
-//   for (let element of data) {
-//     console.log("element email is", element.email)
-//     console.log("compared email is", email)
-//     if(email === element.email) {
-//       return element;
-//     }
-//   }
-//   return false;
-// }
-
-// const passwordCheck = (id, password) => {
-//   if(password === id.password) {
-//     return true;
-//   }
-//   return false;
-// }
-
-// const urlsForUser = (userID) => {
-//   // const shortURL =Object.keys(urlDatabase);
-//   const output = [];
-//   for (key in urlDatabase) {
-//     if (urlDatabase[key].userID === userID) {
-//       output.push(key);
-//     }
-//   }
-//   return output
-// }
-
-// const userURLObjects = (userID) => {
-//   // const shortURL =Object.keys(urlDatabase);
-//   const output = {};
-//   for (let shortURL in urlDatabase) {
-//     console.log(shortURL)
-//     console.log('userid is ', )
-//     if (urlDatabase[shortURL].userID === userID) {
-//       output[shortURL] = urlDatabase[shortURL].longURL;
-//       console.log('shortURL is', shortURL, 'output now is', output)
-//     }
-//   }
-//   return output
-// }
 
 //#endregion
 

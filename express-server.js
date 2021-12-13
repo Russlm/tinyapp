@@ -85,13 +85,10 @@ app.get("/", (req, res) => {
 app.get('/u/:id', (req, res) => {
   const id = req.params.id;
   // const longURL = urlDatabase[id].longURL;
-  console.log('id is:', id)
   if(!urlDatabase[id]) {
     res.status(404);
     res.send("Error 404: Page not Found.")
   }
-  console.log('urlDatabase is', urlDatabase)
-  console.log('urlDatabase[id] is:', urlDatabase[id])
   res.redirect(urlDatabase[id].longURL);
 });
  
@@ -111,24 +108,17 @@ app.get("/urls", (req, res) => {
     // res.send("Error 403: Please Login or Register First.")
     res.redirect('/login')
   }
-  console.log('templateVars being used by /urls', templateVars)
   res.render('urls_index', templateVars);
 });
 
 // /urls POST route.
 app.post("/urls/new", (req, res) => {
   const newLink = generateRandomID();
-  console.log( 'newLink = generateRandomID()', newLink)
-
-  console.log(newLink)
   if(!req.session.user_id) {
     res.status(403);
     res.send('invalid path. please login.')
   }
-  
-  console.log('urlDatabase before addition is', urlDatabase);
   urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.session.user_id}
-  console.log('urlDatabase after addition is', urlDatabase);
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
@@ -138,7 +128,6 @@ app.post("/urls/new", (req, res) => {
   
 // /urls/new GET route.
 app.get("/urls/new", (req, res) => {//--> use recieved cookie here. (userid.)
-  console.log('/urls/new')
   const user = users[req.session.user_id] //-> take recieved cookie and find object.
   const templateVars = { 
     user: user, // -> object with id: value, password: value, email: vlaue 
@@ -161,12 +150,9 @@ app.get("/register", (req, res) => {
     userId: req.session.user_id,
     user: users[req.session.user_id]
   };
-  console.log('/register req.cookies =', req.session.user_id)
   if(req.session.user_id) {
     res.redirect('/urls');
   }
-  console.log('templateVars being sent from urls/new', templateVars);
-  console.log('newly issued login cookie from /register:', req.cookies)
   res.render("register", templateVars);
 });
 
@@ -175,7 +161,6 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const newUserID = generateRandomID();
   const userID = getIDByEmail(req.body.email, users)
-  console.log(newUserID)
 
   //if empty data fields:
   if(!req.body.password || !req.body.email) {
@@ -197,7 +182,6 @@ app.post("/register", (req, res) => {
   }
   // req.session.user_id = newUserID;
   req.session.user_id = newUserID; 
-  console.log(users);
   res.redirect('/urls');
 });
 
@@ -216,15 +200,12 @@ app.get("/login", (req, res) => {
   if(req.session.user_id) {
     res.redirect('/urls');
   }
-  console.log('templateVars being sent from /login', templateVars)
   res.render("login", templateVars);
 });
 
 
 // /login POST route.
 app.post("/login", (req, res) => {
-  console.log('candidate email is: ', req.body.email)
-  console.log('candidate password is: ', req.body.password)
   const userID = getIDByEmail(req.body.email, users);
   //if email is correct:
   if(userID) {
@@ -232,7 +213,6 @@ app.post("/login", (req, res) => {
     if(bcrypt.compareSync(req.body.password, userID.password)) {
       //issue new cookie.
       req.session.user_id = userID.id;
-      console.log('req.session.user_id is:', )
       res.redirect('/urls');
     } else {
       res.status(403)
@@ -250,7 +230,6 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect('/urls');
-  console.log(req.body.email);
 });
 
 
@@ -261,7 +240,6 @@ app.post("/logout", (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const personalURLs = userURLObjects(req.session.user_id, urlDatabase) 
-  console.log("personalURLS", personalURLs)
   const user = users[req.session.user_id] 
   if(!req.session.user_id) {
     res.status(403);
@@ -281,9 +259,6 @@ app.get('/urls/:shortURL', (req, res) => {
     shortURL,
     personalURLs,
   };
-  console.log('cookie sourced userID:', req.session.user_id)
-  console.log('user object:', users[req.session.user_id])
-  console.log('templateVars being sent', templateVars)
   res.render('urls_show', templateVars);
   // res.end('This is our test string.' + shortURL)
 });
@@ -321,5 +296,4 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //SERVER INITIALIZATION: 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
 });
