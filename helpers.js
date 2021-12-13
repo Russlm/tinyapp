@@ -8,27 +8,10 @@ const generateRandomID= () => {
    return randomString(6,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
  }
 
-const searchEmail= (email,database) => {
-  data = Object.values(database);
-  console.log('database input into the searchEmail fn:', data);
-  for (let element of data) {
-    console.log("element email is", element.email)
-    console.log("compared email is", email)
-    if(email === element.email) {
-      return true;
-    }
-  }
-  return false;
-}
-
 const getIDByEmail = (email,database) => {
   data = Object.values(database);
-  console.log('database input into the getIDByEmail fn:',data);
   for (let element of data) {
-    console.log("element email is", element.email)
-    console.log("compared email is", email)
     if(email === element.email) {
-      console.log('element is', element )
       return element;
     }
   }
@@ -43,7 +26,6 @@ const passwordCheck = (id, password) => {
 }
 
 const urlsForUser = (userID, database) => {
-  // const shortURL =Object.keys( database);
   const output = [];
   for (key in urlDatabase) {
     if ( database[key].userID === userID) {
@@ -54,14 +36,10 @@ const urlsForUser = (userID, database) => {
 }
 
 const userURLObjects = (userID, database) => {
-  // const shortURL =Object.keys( database);
   const output = {};
   for (let shortURL in  database) {
-    console.log(shortURL)
-    console.log('userid is ', )
     if ( database[shortURL].userID === userID) {
       output[shortURL] =  database[shortURL].longURL;
-      console.log('shortURL is', shortURL, 'output now is', output)
     }
   }
   return output
