@@ -6,7 +6,6 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session')
 const  {
   generateRandomID,
-  searchEmail,
   getIDByEmail,
   passwordCheck,
   urlsForUser,
@@ -55,79 +54,6 @@ const users = {
   }
 }
  
-
-//HELPER FUNCTIONS. 
-
-//randomization code.
-
-// const generateRandomID= () => {
-//   function randomString(anysize, charset) {
-//      let res = '';
-//      while (anysize--) res += charset[Math.random() * charset.length | 0];
-//      return res;
-//    }
-//    return randomString(6,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
-//  }
-
-// const searchEmail= (email) => {
-//   data = Object.values(users);
-//   console.log('database input into the searchEmail fn:', data);
-//   for (let element of data) {
-//     console.log("element email is", element.email)
-//     console.log("compared email is", email)
-//     if(email === element.email) {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
-
-// const getIDByEmail = (email) => {
-//   data = Object.values(users);
-//   console.log('database input into the getIDByEmail fn:',data);
-//   for (let element of data) {
-//     console.log("element email is", element.email)
-//     console.log("compared email is", email)
-//     if(email === element.email) {
-//       return element;
-//     }
-//   }
-//   return false;
-// }
-
-// const passwordCheck = (id, password) => {
-//   if(password === id.password) {
-//     return true;
-//   }
-//   return false;
-// }
-
-// const urlsForUser = (userID) => {
-//   // const shortURL =Object.keys(urlDatabase);
-//   const output = [];
-//   for (key in urlDatabase) {
-//     if (urlDatabase[key].userID === userID) {
-//       output.push(key);
-//     }
-//   }
-//   return output
-// }
-
-// const userURLObjects = (userID) => {
-//   // const shortURL =Object.keys(urlDatabase);
-//   const output = {};
-//   for (let shortURL in urlDatabase) {
-//     console.log(shortURL)
-//     console.log('userid is ', )
-//     if (urlDatabase[shortURL].userID === userID) {
-//       output[shortURL] = urlDatabase[shortURL].longURL;
-//       console.log('shortURL is', shortURL, 'output now is', output)
-//     }
-//   }
-//   return output
-// }
- 
-
 //DEV GET REQUESTS:
 
  
@@ -248,6 +174,7 @@ app.get("/register", (req, res) => {
 // /register POST route.
 app.post("/register", (req, res) => {
   const newUserID = generateRandomID();
+  const userID = getIDByEmail(req.body.email, users)
   console.log(newUserID)
 
   //if empty data fields:
@@ -257,7 +184,7 @@ app.post("/register", (req, res) => {
   }
 
   // if email matches email in database: 
-  if(searchEmail(req.body.email, urlDatabase)) {
+  if(userID) {
     res.status(400);
     res.send('Email in use. 😅')
   }
@@ -298,10 +225,9 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   console.log('candidate email is: ', req.body.email)
   console.log('candidate password is: ', req.body.password)
-  const isValidEmail = searchEmail(req.body.email, users);
   const userID = getIDByEmail(req.body.email, users);
   //if email is correct:
-  if(isValidEmail) {
+  if(userID) {
     //if password is correct:
     if(bcrypt.compareSync(req.body.password, userID.password)) {
       //issue new cookie.
