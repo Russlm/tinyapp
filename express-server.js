@@ -244,7 +244,6 @@ app.get('/urls/:shortURL', (req, res) => {
     personalURLs,
   };
   res.render('urls_show', templateVars);
-  // res.end('This is our test string.' + shortURL)
 });
 
 // /urls/:shortURL POST route.
