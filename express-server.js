@@ -108,7 +108,7 @@ app.post("/urls", (req, res) => {
   }
 
   urlDatabase[newLink] = {longURL: req.body.longURL, userID: req.session.user_id};
-  res.redirect("/urls");
+  res.redirect(`/urls/${newLink}`);
 });
 
 // /urls/new GET route.
